@@ -4,7 +4,7 @@ name: ✨ Feature Request
 description: Suggest a new feature or improvement
 title: "[Feature]: "
 labels: ["enhancement", "triage", "needs-triage"]
-assignees: githubusernameassignee
+assignees: fayedelac
 
 body:
 

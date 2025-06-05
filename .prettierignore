@@ -19,6 +19,11 @@ Makefile
 .gitignore
 *.txt
 *Dockerfile
+.dockerignore
+.env*
+*nginx.conf
+*settings.py
+
 # Prettier config files
 .prettierignore
 

@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./static:/app/static:ro
+      - ./geojson:/app/geojson:ro
+      - ./media:/app/media
+    environment:
+      - DEBUG=1
+      - DJANGO_SETTINGS_MODULE=mysite.settings
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=exposome_db
+      - POSTGRES_USER=exposome_user
+      - POSTGRES_PASSWORD=exposome_password
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

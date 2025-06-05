@@ -13,7 +13,6 @@ https://developer.mozilla.org/en-US/docs/Web/CSS/--*
   --dark-background-color: rgb(87, 87, 87);
 }
 
-
 /*
 This makes the border and padding be counted as part of the element's size.
 https://developer.mozilla.org/en-US/docs/Learn/CSS/Introduction_to_CSS/Box_model
@@ -29,7 +28,9 @@ to
 /*
 Make the document fill the whole viewport, this overrides any weird defaults that browsers might have.
 */
-html, body, figure {
+html,
+body,
+figure {
   width: 100%;
   padding: 0;
   margin: 0;
@@ -55,14 +56,26 @@ p {
 }
 
 /* Titles: set color and sizes */
-h1, h2, h3, h4, h5, h6
-{
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--theme-color-dark);
 }
-h1 { font-size: 2rem; }
-h2 { font-size: 1.75rem; }
-h3 { font-size: 1.75rem; }
-h4 { font-size: 1.25rem; }
+h1 {
+  font-size: 2rem;
+}
+h2 {
+  font-size: 1.75rem;
+}
+h3 {
+  font-size: 1.75rem;
+}
+h4 {
+  font-size: 1.25rem;
+}
 
 /* Top navigation bar */
 nav {
@@ -109,7 +122,7 @@ nav li {
   position: absolute;
   top: 3.5rem;
   left: 20%;
-  height:90%;
+  height: 90%;
   width: 30%;
   background: whitesmoke;
   font-size: smaller;
@@ -119,19 +132,19 @@ nav li {
 #part1 {
   position: relative;
   left: 5%;
-  height:90%;
+  height: 90%;
   width: 90%;
   font-family: Georgia;
 }
 
 .image {
-float: left;
-margin: 0 20px 10px 0;
+  float: left;
+  margin: 0 20px 10px 0;
 }
 
 .image_right {
-float: right;
-margin: 0 20px 10px 0;
+  float: right;
+  margin: 0 20px 10px 0;
 }
 
 #souspart {
@@ -142,70 +155,69 @@ margin: 0 20px 10px 0;
 }
 
 button {
-        display: inline-block;
-        background-color: #499985;
-        border-radius: 2px;
-        color: #fff;
-        text-align: center;
-        font-size: 15px;
-        padding: 10px;
-        transition: all 0.5s;
-        cursor: pointer;
-        margin: 3px;
+  display: inline-block;
+  background-color: #499985;
+  border-radius: 2px;
+  color: #fff;
+  text-align: center;
+  font-size: 15px;
+  padding: 10px;
+  transition: all 0.5s;
+  cursor: pointer;
+  margin: 3px;
 }
 
 button span {
-        cursor: pointer;
-        display: inline-block;
-        position: relative;
-        transition: 0.5s;
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+  transition: 0.5s;
 }
 
 button span:after {
-        content: "\00bb";
-        position: absolute;
-        opacity: 0;
-        top: 0;
-        right: -20px;
-        transition: 0.5s;
-        background-color: #02edaf;
+  content: "\00bb";
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  right: -20px;
+  transition: 0.5s;
+  background-color: #02edaf;
 }
 
 button:hover {
-        background-color: #499985;
+  background-color: #499985;
 }
 
 button:hover span {
-        padding-right: 25px;
+  padding-right: 25px;
 }
 
 button:hover span:after {
-        opacity: 1;
-        right: 0;
+  opacity: 1;
+  right: 0;
 }
 
-.switchButton{
+.switchButton {
   position: absolute;
   top: 4.5rem;
   right: 0%;
-
 }
 
 .contentClass {
-        display: none;
-        top: 2rem;
-        padding: 5px 16px;
-        height:97%;
-        border: 2px solid #c0c0c0;
+  display: none;
+  top: 2rem;
+  padding: 5px 16px;
+  height: 97%;
+  border: 2px solid #c0c0c0;
 }
 
 #form {
   position: absolute;
   top: 4.5rem;
   left: 2rem;
-  height:90%;
+  height: 90%;
   width: 20%;
-  background: rgb(255,255,255);
+  background: rgb(255, 255, 255);
   font-size: 15px;
   font-family: Ubuntu;
 }
@@ -214,10 +226,10 @@ button:hover span:after {
   position: absolute;
   top: 4.5rem;
   left: 2rem;
-  height:90%;
+  height: 90%;
   width: 20%;
   visibility: collapse;
-  background: rgb(255,255,255);
+  background: rgb(255, 255, 255);
   font-size: smaller;
   font-family: Ubuntu;
 }
@@ -226,7 +238,7 @@ button:hover span:after {
   position: absolute;
   top: 3.5rem;
   left: 50%;
-  height:90%;
+  height: 90%;
   width: 50%;
   background: whitesmoke;
   font-size: smaller;
@@ -236,7 +248,7 @@ button:hover span:after {
 h3 {
   text-align: left;
 }
-  
+
 /* Button to open the content */
 .linkclass {
   float: left;
@@ -244,32 +256,32 @@ h3 {
   padding: 10px 15px 10px 10px;
   background-color: light-grey;
 }
-  
+
 /* Button styling on mouse hover */
 #tabsDiv a:hover {
-        color: black;
-        background-color: #e9e9e9;
-        font-size: 16px;
-    }
-  
+  color: black;
+  background-color: #e9e9e9;
+  font-size: 16px;
+}
+
 /* Change the color of the button */
 button.active {
-        background-color: #c0c0c0;
-    }
-  
+  background-color: #c0c0c0;
+}
+
 /* Content for button tabs*/
-.overlay-container{
-   background-color: #555;
-   width: 150px;
-   color: #fff;
-   text-align: center;
-   border-radius: 1px;
-   padding: 2px 0;
-   position: absolute;
-   z-index: 1;
-   bottom: 100%;
-   left: 50%;
-   margin-left: -80px;   
+.overlay-container {
+  background-color: #555;
+  width: 150px;
+  color: #fff;
+  text-align: center;
+  border-radius: 1px;
+  padding: 2px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -80px;
 }
 
 .ui-autocomplete {
@@ -329,7 +341,7 @@ button.active {
   position: absolute;
   top: 3.5rem;
   left: 40%;
-  height:90%;
+  height: 90%;
   width: 20%;
   background: whitesmoke;
   font-size: smaller;
@@ -340,7 +352,7 @@ button.active {
   position: absolute;
   top: 3.5rem;
   left: 60%;
-  height:90%;
+  height: 90%;
   width: 20%;
   background: whitesmoke;
   font-size: smaller;
@@ -351,7 +363,7 @@ button.active {
   position: absolute;
   top: 3.5rem;
   left: 80%;
-  height:90%;
+  height: 90%;
   width: 20%;
   background: whitesmoke;
   font-size: smaller;

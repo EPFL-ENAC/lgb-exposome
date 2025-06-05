@@ -5,6 +5,7 @@
 node_modules/
 package-lock.json
 npm-shrinkwrap.json
+*.geojson
 
 # Makefiles
 Makefile
@@ -16,7 +17,8 @@ Makefile
 # Git files
 .git/
 .gitignore
-
+*.txt
+*Dockerfile
 # Prettier config files
 .prettierignore
 

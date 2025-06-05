@@ -1,968 +1,1198 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr" class="">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Exposome - Analyse Environnementale</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js"></script>
     <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/ol@7.4.0/dist/ol.js"></script>
-    <link rel="stylesheet" href="https://openlayers.org/en/v7.4.0/css/ol.css">
+    <link rel="stylesheet" href="https://openlayers.org/en/v7.4.0/css/ol.css" />
     <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                            900: '#1e3a8a'
-                        },
-                        accent: {
-                            400: '#34d399',
-                            500: '#10b981',
-                            600: '#059669'
-                        }
-                    },
-                    animation: {
-                        'fade-in': 'fadeIn 0.5s ease-in-out',
-                        'slide-up': 'slideUp 0.3s ease-out',
-                        'pulse-slow': 'pulse 3s infinite',
-                        'bounce-gentle': 'bounceGentle 2s infinite'
-                    },
-                    backdropBlur: {
-                        xs: '2px'
-                    }
-                }
-            }
-        }
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                50: "#f0f9ff",
+                100: "#e0f2fe",
+                500: "#3b82f6",
+                600: "#2563eb",
+                700: "#1d4ed8",
+                900: "#1e3a8a",
+              },
+              accent: {
+                400: "#34d399",
+                500: "#10b981",
+                600: "#059669",
+              },
+            },
+            animation: {
+              "fade-in": "fadeIn 0.5s ease-in-out",
+              "slide-up": "slideUp 0.3s ease-out",
+              "pulse-slow": "pulse 3s infinite",
+              "bounce-gentle": "bounceGentle 2s infinite",
+            },
+            backdropBlur: {
+              xs: "2px",
+            },
+          },
+        },
+      };
     </script>
-    
+
     <style>
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
         }
-        
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        to {
+          opacity: 1;
         }
-        
-        @keyframes bounceGentle {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-        
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-        
-        .gradient-bg {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-        }
-        
-        .chart-container {
-            background: rgba(248, 250, 252, 0.8);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(0, 0, 0, 0.05);
-        }
-        
-        .floating-action {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .floating-action:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-        }
-        
-        .metric-card {
-            transition: all 0.3s ease;
-            border-left: 3px solid transparent;
-        }
-        
-        .metric-card:hover {
-            transform: translateX(3px);
-            border-left-color: #3b82f6;
-        }
-        
-        .search-input {
-            transition: all 0.3s ease;
-        }
-        
-        .search-input:focus {
-            transform: scale(1.01);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-        
-        .map-container {
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-        
-        .tab-button {
-            position: relative;
-            overflow: hidden;
-            transition: all 0.2s ease;
-        }
-        
-        .tab-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
-            transition: left 0.5s;
-        }
-        
-        .tab-button:hover::before {
-            left: 100%;
-        }
-        
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f1f5f9;
-            border-top: 3px solid #3b82f6;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+      }
 
-        .sidebar-panel {
-            min-width: 280px;
-            max-width: 320px;
+      @keyframes slideUp {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
         }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
 
-        .chart-tabs {
-            writing-mode: vertical-lr;
-            text-orientation: mixed;
+      @keyframes bounceGentle {
+        0%,
+        100% {
+          transform: translateY(0);
         }
+        50% {
+          transform: translateY(-5px);
+        }
+      }
 
-        .vertical-tab {
-            writing-mode: horizontal-tb;
-            text-orientation: initial;
-            width: 100%;
-            justify-content: flex-start;
-            border-radius: 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        }
+      .glass-effect {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
 
-        .vertical-tab:last-child {
-            border-bottom: none;
-        }
+      .gradient-bg {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      }
 
-        .vertical-tab.active {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-            color: white;
+      .chart-container {
+        background: rgba(248, 250, 252, 0.8);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      .floating-action {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .floating-action:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      }
+
+      .metric-card {
+        transition: all 0.3s ease;
+        border-left: 3px solid transparent;
+      }
+
+      .metric-card:hover {
+        transform: translateX(3px);
+        border-left-color: #3b82f6;
+      }
+
+      .search-input {
+        transition: all 0.3s ease;
+      }
+
+      .search-input:focus {
+        transform: scale(1.01);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      }
+
+      .map-container {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow:
+          0 10px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+
+      .tab-button {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.2s ease;
+      }
+
+      .tab-button::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(59, 130, 246, 0.1),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .tab-button:hover::before {
+        left: 100%;
+      }
+
+      .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f1f5f9;
+        border-top: 3px solid #3b82f6;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
         }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .sidebar-panel {
+        min-width: 280px;
+        max-width: 320px;
+      }
+
+      .chart-tabs {
+        writing-mode: vertical-lr;
+        text-orientation: mixed;
+      }
+
+      .vertical-tab {
+        writing-mode: horizontal-tb;
+        text-orientation: initial;
+        width: 100%;
+        justify-content: flex-start;
+        border-radius: 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      }
+
+      .vertical-tab:last-child {
+        border-bottom: none;
+      }
+
+      .vertical-tab.active {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        color: white;
+      }
     </style>
-</head>
+  </head>
 
-<body class="bg-gray-50 text-gray-900 min-h-screen overflow-hidden">
+  <body class="bg-gray-50 text-gray-900 min-h-screen overflow-hidden">
     <!-- Navigation claire -->
     <nav class="gradient-bg shadow-lg relative z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-14">
-                <div class="flex items-center space-x-4">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-leaf text-green-300 text-lg"></i>
-                        </div>
-                        <h1 class="text-xl font-bold text-white">
-                            Exposome
-                        </h1>
-                    </div>
-                </div>
-                
-                <div class="flex items-center space-x-6">
-                    <a href="#" class="text-white/80 hover:text-white transition-colors duration-200 flex items-center space-x-2 text-sm">
-                        <i class="fas fa-home"></i>
-                        <span>Accueil</span>
-                    </a>
-                    <a href="#" class="text-white/80 hover:text-white transition-colors duration-200 flex items-center space-x-2 text-sm">
-                        <i class="fas fa-search"></i>
-                        <span>Recherche</span>
-                    </a>
-                </div>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-14">
+          <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-3">
+              <div
+                class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-leaf text-green-300 text-lg"></i>
+              </div>
+              <h1 class="text-xl font-bold text-white">Exposome</h1>
             </div>
+          </div>
+
+          <div class="flex items-center space-x-6">
+            <a
+              href="#"
+              class="text-white/80 hover:text-white transition-colors duration-200 flex items-center space-x-2 text-sm"
+            >
+              <i class="fas fa-home"></i>
+              <span>Accueil</span>
+            </a>
+            <a
+              href="#"
+              class="text-white/80 hover:text-white transition-colors duration-200 flex items-center space-x-2 text-sm"
+            >
+              <i class="fas fa-search"></i>
+              <span>Recherche</span>
+            </a>
+          </div>
         </div>
+      </div>
     </nav>
 
     <div class="flex h-screen pt-14">
-        <!-- Panneau de recherche -->
-        <div id="search-panel" class="sidebar-panel glass-effect m-3 rounded-xl p-4 animate-slide-up">
-            <div class="space-y-4">
-                <div class="text-center">
-                    <h2 class="text-lg font-semibold mb-2 flex items-center justify-center space-x-2 text-gray-700">
-                        <i class="fas fa-map-marker-alt text-blue-500"></i>
-                        <span>Rechercher une adresse</span>
-                    </h2>
-                    <div class="w-12 h-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-full mx-auto"></div>
-                </div>
+      <!-- Panneau de recherche -->
+      <div
+        id="search-panel"
+        class="sidebar-panel glass-effect m-3 rounded-xl p-4 animate-slide-up"
+      >
+        <div class="space-y-4">
+          <div class="text-center">
+            <h2
+              class="text-lg font-semibold mb-2 flex items-center justify-center space-x-2 text-gray-700"
+            >
+              <i class="fas fa-map-marker-alt text-blue-500"></i>
+              <span>Rechercher une adresse</span>
+            </h2>
+            <div
+              class="w-12 h-0.5 bg-gradient-to-r from-blue-500 to-green-500 rounded-full mx-auto"
+            ></div>
+          </div>
 
-                <div class="space-y-3">
-                    <div class="relative">
-                        <label class="block text-xs font-medium text-gray-600 mb-1">Code Postal</label>
-                        <div class="relative">
-                            <i class="fas fa-hashtag absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
-                            <input id="search_NPA" type="text" 
-                                class="search-input w-full pl-8 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-400 text-sm"
-                                placeholder="1207">
-                        </div>
-                    </div>
-
-                    <div class="relative">
-                        <label class="block text-xs font-medium text-gray-600 mb-1">Ville</label>
-                        <div class="relative">
-                            <i class="fas fa-city absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
-                            <input id="search_ville" type="text" 
-                                class="search-input w-full pl-8 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-400 text-sm"
-                                placeholder="Genève">
-                        </div>
-                    </div>
-
-                    <div class="relative">
-                        <label class="block text-xs font-medium text-gray-600 mb-1">Adresse</label>
-                        <div class="relative">
-                            <i class="fas fa-road absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
-                            <input id="search_adress" type="text" 
-                                class="search-input w-full pl-8 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-400 text-sm"
-                                placeholder="Place de Jargonnant 3">
-                        </div>
-                    </div>
-
-                    <button id="search-button" class="floating-action w-full bg-gradient-to-r from-blue-500 to-blue-500 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 text-sm">
-                        <i class="fas fa-search"></i>
-                        <span>Rechercher</span>
-                    </button>
-                </div>
-
-                <div class="text-center">
-                    <div class="flex items-center my-3">
-                        <div class="flex-grow h-px bg-gray-300"></div>
-                        <span class="px-2 text-gray-500 text-xs">ou</span>
-                        <div class="flex-grow h-px bg-gray-300"></div>
-                    </div>
-                    
-                    <button id="search-button-map" class="floating-action w-full bg-gradient-to-r from-green-500 to-green-500 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 text-sm">
-                        <i class="fas fa-crosshairs"></i>
-                        <span>Sélectionner sur la carte</span>
-                    </button>
-                </div>
+          <div class="space-y-3">
+            <div class="relative">
+              <label class="block text-xs font-medium text-gray-600 mb-1"
+                >Code Postal</label
+              >
+              <div class="relative">
+                <i
+                  class="fas fa-hashtag absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"
+                ></i>
+                <input
+                  id="search_NPA"
+                  type="text"
+                  class="search-input w-full pl-8 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-400 text-sm"
+                  placeholder="1207"
+                />
+              </div>
             </div>
+
+            <div class="relative">
+              <label class="block text-xs font-medium text-gray-600 mb-1"
+                >Ville</label
+              >
+              <div class="relative">
+                <i
+                  class="fas fa-city absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"
+                ></i>
+                <input
+                  id="search_ville"
+                  type="text"
+                  class="search-input w-full pl-8 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-400 text-sm"
+                  placeholder="Genève"
+                />
+              </div>
+            </div>
+
+            <div class="relative">
+              <label class="block text-xs font-medium text-gray-600 mb-1"
+                >Adresse</label
+              >
+              <div class="relative">
+                <i
+                  class="fas fa-road absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"
+                ></i>
+                <input
+                  id="search_adress"
+                  type="text"
+                  class="search-input w-full pl-8 pr-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-400 text-sm"
+                  placeholder="Place de Jargonnant 3"
+                />
+              </div>
+            </div>
+
+            <button
+              id="search-button"
+              class="floating-action w-full bg-gradient-to-r from-blue-500 to-blue-500 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 text-sm"
+            >
+              <i class="fas fa-search"></i>
+              <span>Rechercher</span>
+            </button>
+          </div>
+
+          <div class="text-center">
+            <div class="flex items-center my-3">
+              <div class="flex-grow h-px bg-gray-300"></div>
+              <span class="px-2 text-gray-500 text-xs">ou</span>
+              <div class="flex-grow h-px bg-gray-300"></div>
+            </div>
+
+            <button
+              id="search-button-map"
+              class="floating-action w-full bg-gradient-to-r from-green-500 to-green-500 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 text-sm"
+            >
+              <i class="fas fa-crosshairs"></i>
+              <span>Sélectionner sur la carte</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panneau de résultats -->
+      <div
+        id="results-panel"
+        class="sidebar-panel glass-effect m-3 rounded-xl p-4 hidden animate-slide-up"
+      >
+        <div class="space-y-4">
+          <div class="text-center">
+            <h2
+              class="text-lg font-semibold mb-2 flex items-center justify-center space-x-2 text-gray-700"
+            >
+              <i class="fas fa-analytics text-green-500"></i>
+              <span>Résultats</span>
+            </h2>
+            <div
+              class="w-12 h-0.5 bg-gradient-to-r from-green-500 to-blue-500 rounded-full mx-auto"
+            ></div>
+          </div>
+
+          <div class="bg-blue-50 rounded-lg p-3 border border-blue-100">
+            <h3 class="font-medium text-gray-700 mb-1 text-sm">
+              Adresse recherchée
+            </h3>
+            <div id="adresse" class="text-gray-900 font-semibold text-sm"></div>
+            <div id="npa_ville" class="text-blue-600 text-xs"></div>
+          </div>
+
+          <div class="space-y-2">
+            <h3 class="font-medium text-gray-700 mb-2 text-sm">
+              Statistiques de l'hectare
+            </h3>
+
+            <div
+              class="metric-card bg-green-50 rounded-lg p-3 border border-green-100"
+            >
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs text-gray-600">Indice de végétation</span>
+                <i class="fas fa-seedling text-green-500 text-sm"></i>
+              </div>
+              <div
+                id="ndvi_value"
+                class="text-gray-900 font-semibold text-sm"
+              ></div>
+            </div>
+
+            <div
+              class="metric-card bg-yellow-50 rounded-lg p-3 border border-yellow-100"
+            >
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs text-gray-600">Revenu médian (kCHF)</span>
+                <i class="fas fa-coins text-yellow-500 text-sm"></i>
+              </div>
+              <div
+                id="income_value"
+                class="text-gray-900 font-semibold text-sm"
+              ></div>
+            </div>
+
+            <div
+              class="metric-card bg-red-50 rounded-lg p-3 border border-red-100"
+            >
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs text-gray-600">Pollution (μg/m³)</span>
+                <i class="fas fa-smog text-red-500 text-sm"></i>
+              </div>
+              <div
+                id="pm25_value"
+                class="text-gray-900 font-semibold text-sm"
+              ></div>
+            </div>
+
+            <div
+              class="metric-card bg-orange-50 rounded-lg p-3 border border-orange-100"
+            >
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs text-gray-600">Bruit routier (dB)</span>
+                <i class="fas fa-volume-up text-orange-500 text-sm"></i>
+              </div>
+              <div
+                id="noise_value"
+                class="text-gray-900 font-semibold text-sm"
+              ></div>
+            </div>
+          </div>
+
+          <button
+            id="reset-button"
+            class="floating-action w-full bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 text-sm"
+          >
+            <i class="fas fa-redo"></i>
+            <span>Réinitialiser</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Zone principale avec carte -->
+      <div class="flex-1 flex m-3 space-x-3">
+        <!-- Carte principale -->
+        <div class="flex-1 glass-effect rounded-xl p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h3
+              class="text-lg font-semibold flex items-center space-x-2 text-gray-700"
+            >
+              <i class="fas fa-map text-blue-500"></i>
+              <span>Carte Interactive</span>
+            </h3>
+            <button
+              id="switch-button"
+              class="floating-action bg-gradient-to-r from-blue-800 to-blue-800 text-white font-medium py-2 px-3 rounded-lg flex items-center space-x-2 text-sm"
+            >
+              <i class="fas fa-satellite"></i>
+              <span>Vue Satellite</span>
+            </button>
+          </div>
+          <div id="map" class="map-container w-full h-full bg-gray-100"></div>
         </div>
 
-        <!-- Panneau de résultats -->
-        <div id="results-panel" class="sidebar-panel glass-effect m-3 rounded-xl p-4 hidden animate-slide-up">
-            <div class="space-y-4">
-                <div class="text-center">
-                    <h2 class="text-lg font-semibold mb-2 flex items-center justify-center space-x-2 text-gray-700">
-                        <i class="fas fa-analytics text-green-500"></i>
-                        <span>Résultats</span>
-                    </h2>
-                    <div class="w-12 h-0.5 bg-gradient-to-r from-green-500 to-blue-500 rounded-full mx-auto"></div>
-                </div>
+        <!-- Panneau des graphiques vertical -->
+        <div class="w-80 glass-effect rounded-xl p-4">
+          <div class="h-full flex flex-col">
+            <h3 class="text-lg font-semibold mb-3 text-gray-700 text-center">
+              <i class="fas fa-chart-bar text-blue-500 mr-2"></i>Analyses
+            </h3>
 
-                <div class="bg-blue-50 rounded-lg p-3 border border-blue-100">
-                    <h3 class="font-medium text-gray-700 mb-1 text-sm">Adresse recherchée</h3>
-                    <div id="adresse" class="text-gray-900 font-semibold text-sm"></div>
-                    <div id="npa_ville" class="text-blue-600 text-xs"></div>
-                </div>
-
-                <div class="space-y-2">
-                    <h3 class="font-medium text-gray-700 mb-2 text-sm">Statistiques de l'hectare</h3>
-                    
-                    <div class="metric-card bg-green-50 rounded-lg p-3 border border-green-100">
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="text-xs text-gray-600">Indice de végétation</span>
-                            <i class="fas fa-seedling text-green-500 text-sm"></i>
-                        </div>
-                        <div id="ndvi_value" class="text-gray-900 font-semibold text-sm"></div>
-                    </div>
-
-                    <div class="metric-card bg-yellow-50 rounded-lg p-3 border border-yellow-100">
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="text-xs text-gray-600">Revenu médian (kCHF)</span>
-                            <i class="fas fa-coins text-yellow-500 text-sm"></i>
-                        </div>
-                        <div id="income_value" class="text-gray-900 font-semibold text-sm"></div>
-                    </div>
-
-                    <div class="metric-card bg-red-50 rounded-lg p-3 border border-red-100">
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="text-xs text-gray-600">Pollution (μg/m³)</span>
-                            <i class="fas fa-smog text-red-500 text-sm"></i>
-                        </div>
-                        <div id="pm25_value" class="text-gray-900 font-semibold text-sm"></div>
-                    </div>
-
-                    <div class="metric-card bg-orange-50 rounded-lg p-3 border border-orange-100">
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="text-xs text-gray-600">Bruit routier (dB)</span>
-                            <i class="fas fa-volume-up text-orange-500 text-sm"></i>
-                        </div>
-                        <div id="noise_value" class="text-gray-900 font-semibold text-sm"></div>
-                    </div>
-                </div>
-
-                <button id="reset-button" class="floating-action w-full bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center space-x-2 text-sm">
-                    <i class="fas fa-redo"></i>
-                    <span>Réinitialiser</span>
-                </button>
+            <!-- Onglets verticaux -->
+            <div class="flex flex-col space-y-1 mb-4">
+              <button
+                class="vertical-tab active bg-gradient-to-r from-green-500 to-green-600 text-white font-medium py-2 px-3 text-left transition-all duration-200 text-sm"
+                onclick="displayContent(event, 'NDVI')"
+              >
+                <i class="fas fa-leaf mr-2"></i>NDVI
+              </button>
+              <button
+                class="vertical-tab bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-3 text-left transition-all duration-200 text-sm"
+                onclick="displayContent(event, 'revenu_moyen')"
+              >
+                <i class="fas fa-chart-line mr-2"></i>Revenu
+              </button>
+              <button
+                class="vertical-tab bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-3 text-left transition-all duration-200 text-sm"
+                onclick="displayContent(event, 'PM_2.5')"
+              >
+                <i class="fas fa-smog mr-2"></i>PM 2.5
+              </button>
+              <button
+                class="vertical-tab bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-3 text-left transition-all duration-200 text-sm"
+                onclick="displayContent(event, 'bruit_routier')"
+              >
+                <i class="fas fa-volume-up mr-2"></i>Bruit
+              </button>
             </div>
+
+            <!-- Conteneurs des graphiques -->
+            <div class="flex-1">
+              <div
+                id="NDVI"
+                class="contentClass chart-container rounded-lg h-full"
+              ></div>
+              <div
+                id="revenu_moyen"
+                class="contentClass chart-container rounded-lg h-full hidden"
+              ></div>
+              <div
+                id="PM_2.5"
+                class="contentClass chart-container rounded-lg h-full hidden"
+              ></div>
+              <div
+                id="bruit_routier"
+                class="contentClass chart-container rounded-lg h-full hidden"
+              ></div>
+            </div>
+          </div>
         </div>
-
-        <!-- Zone principale avec carte -->
-        <div class="flex-1 flex m-3 space-x-3">
-            <!-- Carte principale -->
-            <div class="flex-1 glass-effect rounded-xl p-4">
-                <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-lg font-semibold flex items-center space-x-2 text-gray-700">
-                        <i class="fas fa-map text-blue-500"></i>
-                        <span>Carte Interactive</span>
-                    </h3>
-                    <button id="switch-button" class="floating-action bg-gradient-to-r from-blue-800 to-blue-800 text-white font-medium py-2 px-3 rounded-lg flex items-center space-x-2 text-sm">
-                        <i class="fas fa-satellite"></i>
-                        <span>Vue Satellite</span>
-                    </button>
-                </div>
-                <div id="map" class="map-container w-full h-full bg-gray-100"></div>
-            </div>
-
-            <!-- Panneau des graphiques vertical -->
-            <div class="w-80 glass-effect rounded-xl p-4">
-                <div class="h-full flex flex-col">
-                    <h3 class="text-lg font-semibold mb-3 text-gray-700 text-center">
-                        <i class="fas fa-chart-bar text-blue-500 mr-2"></i>Analyses
-                    </h3>
-                    
-                    <!-- Onglets verticaux -->
-                    <div class="flex flex-col space-y-1 mb-4">
-                        <button class="vertical-tab active bg-gradient-to-r from-green-500 to-green-600 text-white font-medium py-2 px-3 text-left transition-all duration-200 text-sm" 
-                                onclick="displayContent(event, 'NDVI')">
-                            <i class="fas fa-leaf mr-2"></i>NDVI
-                        </button>
-                        <button class="vertical-tab bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-3 text-left transition-all duration-200 text-sm" 
-                                onclick="displayContent(event, 'revenu_moyen')">
-                            <i class="fas fa-chart-line mr-2"></i>Revenu
-                        </button>
-                        <button class="vertical-tab bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-3 text-left transition-all duration-200 text-sm" 
-                                onclick="displayContent(event, 'PM_2.5')">
-                            <i class="fas fa-smog mr-2"></i>PM 2.5
-                        </button>
-                        <button class="vertical-tab bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-3 text-left transition-all duration-200 text-sm" 
-                                onclick="displayContent(event, 'bruit_routier')">
-                            <i class="fas fa-volume-up mr-2"></i>Bruit
-                        </button>
-                    </div>
-
-                    <!-- Conteneurs des graphiques -->
-                    <div class="flex-1">
-                        <div id="NDVI" class="contentClass chart-container rounded-lg h-full"></div>
-                        <div id="revenu_moyen" class="contentClass chart-container rounded-lg h-full hidden"></div>
-                        <div id="PM_2.5" class="contentClass chart-container rounded-lg h-full hidden"></div>
-                        <div id="bruit_routier" class="contentClass chart-container rounded-lg h-full hidden"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
 
     <!-- Overlay pour les informations -->
     <div class="overlay-container glass-effect rounded-lg p-3 text-xs hidden">
-        <div id="feature-RELI" class="font-semibold text-blue-600"></div>
-        <div id="feature-NDVI" class="text-green-600"></div>
-        <div id="feature-Income" class="text-yellow-600"></div>
-        <div id="feature-PM25" class="text-red-600"></div>
-        <div id="feature-Noise" class="text-orange-600"></div>
+      <div id="feature-RELI" class="font-semibold text-blue-600"></div>
+      <div id="feature-NDVI" class="text-green-600"></div>
+      <div id="feature-Income" class="text-yellow-600"></div>
+      <div id="feature-PM25" class="text-red-600"></div>
+      <div id="feature-Noise" class="text-orange-600"></div>
     </div>
 
     <!-- Loading overlay -->
-    <div id="loading-overlay" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-        <div class="glass-effect rounded-xl p-6 text-center">
-            <div class="loading-spinner mx-auto mb-3"></div>
-            <h3 class="text-lg font-semibold mb-1 text-gray-700">Chargement...</h3>
-            <p class="text-gray-600 text-sm">Récupération des données environnementales</p>
-        </div>
+    <div
+      id="loading-overlay"
+      class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 hidden"
+    >
+      <div class="glass-effect rounded-xl p-6 text-center">
+        <div class="loading-spinner mx-auto mb-3"></div>
+        <h3 class="text-lg font-semibold mb-1 text-gray-700">Chargement...</h3>
+        <p class="text-gray-600 text-sm">
+          Récupération des données environnementales
+        </p>
+      </div>
     </div>
 
     <script>
-        // Variables globales
-        let map;
-        let marker;
-        let layers = [];
-        let currentMapSource = 'OSM';
+      // Variables globales
+      let map;
+      let marker;
+      let layers = [];
+      let currentMapSource = "OSM";
 
-        // Initialisation
-        $(document).ready(function() {
-            initializeAutocompletion();
-            initializeMap();
-            attachEventHandlers();
-            initializeCharts();
+      // Initialisation
+      $(document).ready(function () {
+        initializeAutocompletion();
+        initializeMap();
+        attachEventHandlers();
+        initializeCharts();
+      });
+
+      // Autocomplétion moderne
+      function initializeAutocompletion() {
+        $("#search_NPA").autocomplete({
+          autoFocus: true,
+          source: function (request, response) {
+            showLoading();
+            $.ajax({
+              url:
+                "https://api3.geo.admin.ch/rest/services/api/MapServer/find?layer=ch.swisstopo-vd.ortschaftenverzeichnis_plz&searchText=" +
+                request.term +
+                "&searchField=plz",
+              dataType: "json",
+              success: function (data) {
+                const transformed = $.map(data.results, function (el) {
+                  return { value: el.attributes.plz };
+                });
+                response(transformed);
+                hideLoading();
+              },
+              error: function () {
+                response([]);
+                hideLoading();
+              },
+            });
+          },
         });
 
-        // Autocomplétion moderne
-        function initializeAutocompletion() {
-            $("#search_NPA").autocomplete({
-                autoFocus: true,
-                source: function(request, response) {
-                    showLoading();
-                    $.ajax({
-                        url: "https://api3.geo.admin.ch/rest/services/api/MapServer/find?layer=ch.swisstopo-vd.ortschaftenverzeichnis_plz&searchText=" + request.term + "&searchField=plz",
-                        dataType: "json",
-                        success: function(data) {
-                            const transformed = $.map(data.results, function(el) {
-                                return { value: el.attributes.plz };
-                            });
-                            response(transformed);
-                            hideLoading();
-                        },
-                        error: function() {
-                            response([]);
-                            hideLoading();
-                        }
-                    });
+        $("#search_NPA").on("blur", function () {
+          if ($(this).val()) {
+            $.getJSON(
+              "https://api3.geo.admin.ch/rest/services/api/MapServer/find?layer=ch.swisstopo-vd.ortschaftenverzeichnis_plz&searchText=" +
+                $(this).val() +
+                "&searchField=plz",
+              function (el) {
+                let city = $.map(el.results, function (i) {
+                  return i.attributes.langtext;
+                });
+
+                if (city == "Cheseaux-Noréaz,Yverdon-les-Bains") {
+                  city = "Yverdon-les-Bains";
+                } else if (city == "Prilly,Jouxtens-Mézery") {
+                  city = "Prilly";
                 }
-            });
 
-            $("#search_NPA").on("blur", function() {
-                if ($(this).val()) {
-                    $.getJSON("https://api3.geo.admin.ch/rest/services/api/MapServer/find?layer=ch.swisstopo-vd.ortschaftenverzeichnis_plz&searchText=" + $(this).val() + "&searchField=plz", function(el) {
-                        let city = $.map(el.results, function(i) {
-                            return i.attributes.langtext;
-                        });
-                        
-                        if (city == 'Cheseaux-Noréaz,Yverdon-les-Bains') {
-                            city = 'Yverdon-les-Bains';
-                        } else if (city == 'Prilly,Jouxtens-Mézery') {
-                            city = 'Prilly';
-                        }
-                        
-                        $("#search_ville").val(city);
+                $("#search_ville").val(city);
+              },
+            );
+          }
+        });
+
+        $("#search_adress").autocomplete({
+          autoFocus: true,
+          source: function (request, response) {
+            if (!$("#search_NPA").val()) return;
+
+            $.getJSON(
+              "https://api3.geo.admin.ch/rest/services/api/MapServer/find?layer=ch.swisstopo-vd.ortschaftenverzeichnis_plz&searchText=" +
+                $("#search_NPA").val() +
+                "&searchField=plz",
+              function (data) {
+                const bbox = JSON.stringify(data.results[0].bbox);
+
+                $.ajax({
+                  url:
+                    "https://api3.geo.admin.ch/rest/services/api/SearchServer?layer=ch.bfs.gebaeude_wohnungs_register&searchText=" +
+                    request.term +
+                    "&type=locations&bbox=" +
+                    bbox.slice(1, -1) +
+                    "&origins=address",
+                  dataType: "json",
+                  success: function (data) {
+                    const transformed = $.map(data.results, function (el) {
+                      return { value: el.attrs.label.split("<b>")[0] };
                     });
-                }
-            });
+                    response(transformed);
+                  },
+                });
+              },
+            );
+          },
+        });
+      }
 
-            $("#search_adress").autocomplete({
-                autoFocus: true,
-                source: function(request, response) {
-                    if (!$("#search_NPA").val()) return;
-                    
-                    $.getJSON("https://api3.geo.admin.ch/rest/services/api/MapServer/find?layer=ch.swisstopo-vd.ortschaftenverzeichnis_plz&searchText=" + $("#search_NPA").val() + "&searchField=plz", function(data) {
-                        const bbox = JSON.stringify(data.results[0].bbox);
-                        
-                        $.ajax({
-                            url: "https://api3.geo.admin.ch/rest/services/api/SearchServer?layer=ch.bfs.gebaeude_wohnungs_register&searchText=" + request.term + "&type=locations&bbox=" + bbox.slice(1, -1) + "&origins=address",
-                            dataType: "json",
-                            success: function(data) {
-                                const transformed = $.map(data.results, function(el) {
-                                    return { value: el.attrs.label.split("<b>")[0] };
-                                });
-                                response(transformed);
-                            }
-                        });
-                    });
-                }
-            });
+      // Initialisation de la carte
+      function initializeMap() {
+        const cantonStyle = new ol.style.Style({
+          fill: new ol.style.Fill({ color: "rgba(59, 130, 246, 0.2)" }),
+          stroke: new ol.style.Stroke({ color: "#3b82f6", width: 1 }),
+        });
+
+        const hectareStyle = new ol.style.Style({
+          fill: new ol.style.Fill({ color: "rgba(16, 185, 129, 0.2)" }),
+          stroke: new ol.style.Stroke({ color: "#10b981", width: 1 }),
+        });
+
+        // Couches de base
+        layers.push(
+          new ol.layer.Tile({
+            visible: false,
+            source: new ol.source.XYZ({
+              url: "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+            }),
+          }),
+        );
+
+        layers.push(
+          new ol.layer.Tile({
+            visible: true,
+            source: new ol.source.OSM(),
+          }),
+        );
+
+        map = new ol.Map({
+          target: "map",
+          layers: layers,
+          view: new ol.View({
+            center: ol.proj.fromLonLat([8, 46.5]),
+            zoom: 7,
+          }),
+        });
+
+        // Configuration de l'overlay
+        const overlayElement = document.querySelector(".overlay-container");
+        const overlay = new ol.Overlay({
+          element: overlayElement,
+          positioning: "bottom-center",
+          stopEvent: false,
+          offset: [0, -10],
+        });
+        map.addOverlay(overlay);
+
+        // Gestionnaire de clic sur la carte
+        map.on("click", function (e) {
+          const clickedCoordinate = ol.proj.transform(
+            e.coordinate,
+            "EPSG:3857",
+            "EPSG:4326",
+          );
+          handleMapClick(
+            clickedCoordinate[0],
+            clickedCoordinate[1],
+            e.coordinate,
+            overlay,
+          );
+        });
+      }
+
+      // Gestion des événements
+      function attachEventHandlers() {
+        document.getElementById("search-button").onclick = handleAddressSearch;
+        document.getElementById("reset-button").onclick = resetInterface;
+        document.getElementById("search-button-map").onclick =
+          handleMapSelection;
+        document.getElementById("switch-button").onclick = switchMapBackground;
+      }
+
+      // Initialisation des graphiques
+      function initializeCharts() {
+        const layout = {
+          paper_bgcolor: "rgba(248, 250, 252, 0.8)",
+          plot_bgcolor: "rgba(255, 255, 255, 0.9)",
+          font: { color: "#374151", size: 11 },
+          margin: { t: 30, r: 20, b: 30, l: 40 },
+          height: 250,
+          showlegend: false,
+        };
+
+        const emptyData = [
+          {
+            y: [],
+            type: "box",
+            marker: { color: "#3b82f6", opacity: 0.7 },
+            line: { color: "#1d4ed8", width: 1 },
+          },
+        ];
+
+        ["NDVI", "revenu_moyen", "bruit_routier", "PM_2.5"].forEach((id) => {
+          Plotly.newPlot(id, emptyData, layout, {
+            responsive: true,
+            displayModeBar: false,
+          });
+        });
+      }
+
+      // Fonctions utilitaires
+      function showLoading() {
+        document.getElementById("loading-overlay").classList.remove("hidden");
+      }
+
+      function hideLoading() {
+        document.getElementById("loading-overlay").classList.add("hidden");
+      }
+
+      function displayContent(event, contentId) {
+        // Masquer tous les contenus
+        document.querySelectorAll(".contentClass").forEach((el) => {
+          el.classList.add("hidden");
+        });
+
+        // Retirer la classe active de tous les boutons
+        document.querySelectorAll(".vertical-tab").forEach((el) => {
+          el.classList.remove("active");
+          el.className = el.className.replace(
+            "from-green-500 to-green-600",
+            "bg-gray-100 hover:bg-gray-200",
+          );
+          el.className = el.className.replace(
+            "from-yellow-500 to-yellow-600",
+            "bg-gray-100 hover:bg-gray-200",
+          );
+          el.className = el.className.replace(
+            "from-red-500 to-red-600",
+            "bg-gray-100 hover:bg-gray-200",
+          );
+          el.className = el.className.replace(
+            "from-orange-500 to-orange-600",
+            "bg-gray-100 hover:bg-gray-200",
+          );
+          el.className = el.className.replace("text-white", "text-gray-700");
+        });
+
+        // Afficher le contenu sélectionné
+        document.getElementById(contentId).classList.remove("hidden");
+
+        // Activer le bouton sélectionné avec la couleur appropriée
+        const button = event.currentTarget;
+        button.classList.add("active");
+        button.className = button.className.replace(
+          "bg-gray-100 hover:bg-gray-200 text-gray-700",
+          "",
+        );
+
+        if (contentId === "NDVI") {
+          button.className +=
+            " bg-gradient-to-r from-green-500 to-green-600 text-white";
+        } else if (contentId === "revenu_moyen") {
+          button.className +=
+            " bg-gradient-to-r from-yellow-500 to-yellow-600 text-white";
+        } else if (contentId === "PM_2.5") {
+          button.className +=
+            " bg-gradient-to-r from-red-500 to-red-600 text-white";
+        } else if (contentId === "bruit_routier") {
+          button.className +=
+            " bg-gradient-to-r from-orange-500 to-orange-600 text-white";
+        }
+      }
+
+      function handleAddressSearch() {
+        const npa = document.getElementById("search_NPA").value;
+        const ville = document.getElementById("search_ville").value;
+        const adresse = document.getElementById("search_adress").value;
+
+        if (!npa || !ville || !adresse) {
+          showNotification("Veuillez remplir tous les champs", "error");
+          return;
         }
 
-        // Initialisation de la carte
-        function initializeMap() {
-            const cantonStyle = new ol.style.Style({
-                fill: new ol.style.Fill({ color: 'rgba(59, 130, 246, 0.2)' }),
-                stroke: new ol.style.Stroke({ color: '#3b82f6', width: 1 })
-            });
+        showLoading();
 
-            const hectareStyle = new ol.style.Style({
-                fill: new ol.style.Fill({ color: 'rgba(16, 185, 129, 0.2)' }),
-                stroke: new ol.style.Stroke({ color: '#10b981', width: 1 })
-            });
+        // Simulation d'une recherche d'adresse
+        setTimeout(() => {
+          displayResults(adresse, npa + " " + ville);
+          hideLoading();
+        }, 1500);
+      }
 
-            // Couches de base
-            layers.push(new ol.layer.Tile({
-                visible: false,
-                source: new ol.source.XYZ({
-                    url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-                })
-            }));
+      function handleMapSelection() {
+        showNotification(
+          "Cliquez sur la carte pour sélectionner une position",
+          "info",
+        );
 
-            layers.push(new ol.layer.Tile({
-                visible: true,
-                source: new ol.source.OSM()
-            }));
+        const draw = new ol.interaction.Draw({
+          type: "Point",
+          style: new ol.style.Style({
+            image: new ol.style.Circle({
+              radius: 8,
+              fill: new ol.style.Fill({ color: "#3b82f6" }),
+              stroke: new ol.style.Stroke({ color: "white", width: 2 }),
+            }),
+          }),
+        });
 
-            map = new ol.Map({
-                target: 'map',
-                layers: layers,
-                view: new ol.View({
-                    center: ol.proj.fromLonLat([8, 46.5]),
-                    zoom: 7
-                })
-            });
+        map.addInteraction(draw);
 
-            // Configuration de l'overlay
-            const overlayElement = document.querySelector('.overlay-container');
-            const overlay = new ol.Overlay({
-                element: overlayElement,
-                positioning: 'bottom-center',
-                stopEvent: false,
-                offset: [0, -10]
-            });
-            map.addOverlay(overlay);
+        draw.on("drawend", function (evt) {
+          const coordinate = evt.feature.getGeometry().getCoordinates();
+          const lonLat = ol.proj.transform(
+            coordinate,
+            "EPSG:3857",
+            "EPSG:4326",
+          );
 
-            // Gestionnaire de clic sur la carte
-            map.on('click', function(e) {
-                const clickedCoordinate = ol.proj.transform(e.coordinate, 'EPSG:3857', 'EPSG:4326');
-                handleMapClick(clickedCoordinate[0], clickedCoordinate[1], e.coordinate, overlay);
-            });
+          map.removeInteraction(draw);
+          showLoading();
+
+          setTimeout(() => {
+            displayResults(
+              "Position sélectionnée",
+              `${lonLat[1].toFixed(4)}, ${lonLat[0].toFixed(4)}`,
+            );
+            hideLoading();
+          }, 1000);
+        });
+      }
+
+      function handleMapClick(longitude, latitude, coordinate, overlay) {
+        // Simulation de récupération de données
+        const mockData = {
+          canton: "Genève",
+          ndvi: (0.2 + Math.random() * 0.3).toFixed(2),
+          income: Math.floor(80 + Math.random() * 40),
+          pm25: Math.floor(8 + Math.random() * 12),
+          noise: Math.floor(50 + Math.random() * 25),
+        };
+
+        // Afficher l'overlay avec les informations
+        overlay.setPosition(coordinate);
+        document.getElementById("feature-RELI").innerHTML =
+          `Canton: ${mockData.canton}`;
+        document.getElementById("feature-NDVI").innerHTML =
+          `NDVI: ${mockData.ndvi}`;
+        document.getElementById("feature-Income").innerHTML =
+          `Revenu: ${mockData.income} kCHF`;
+        document.getElementById("feature-PM25").innerHTML =
+          `PM 2.5: ${mockData.pm25} μg/m³`;
+        document.getElementById("feature-Noise").innerHTML =
+          `Bruit: ${mockData.noise} dB`;
+
+        document.querySelector(".overlay-container").classList.remove("hidden");
+
+        // Centrer la carte et zoomer
+        map.getView().setCenter(coordinate);
+        map.getView().setZoom(17);
+
+        // Ajouter un marqueur
+        addMarker(coordinate);
+
+        // Mettre à jour les graphiques avec des données simulées
+        updateChartsWithData(mockData);
+      }
+
+      function addMarker(coordinate) {
+        if (marker) {
+          map.removeLayer(marker);
         }
 
-        // Gestion des événements
-        function attachEventHandlers() {
-            document.getElementById('search-button').onclick = handleAddressSearch;
-            document.getElementById('reset-button').onclick = resetInterface;
-            document.getElementById('search-button-map').onclick = handleMapSelection;
-            document.getElementById('switch-button').onclick = switchMapBackground;
-        }
-
-        // Initialisation des graphiques
-        function initializeCharts() {
-            const layout = {
-                paper_bgcolor: 'rgba(248, 250, 252, 0.8)',
-                plot_bgcolor: 'rgba(255, 255, 255, 0.9)',
-                font: { color: '#374151', size: 11 },
-                margin: { t: 30, r: 20, b: 30, l: 40 },
-                height: 250,
-                showlegend: false
-            };
-
-            const emptyData = [{
-                y: [],
-                type: 'box',
-                marker: { color: '#3b82f6', opacity: 0.7 },
-                line: { color: '#1d4ed8', width: 1 }
-            }];
-
-            ['NDVI', 'revenu_moyen', 'bruit_routier', 'PM_2.5'].forEach(id => {
-                Plotly.newPlot(id, emptyData, layout, {responsive: true, displayModeBar: false});
-            });
-        }
-
-        // Fonctions utilitaires
-        function showLoading() {
-            document.getElementById('loading-overlay').classList.remove('hidden');
-        }
-
-        function hideLoading() {
-            document.getElementById('loading-overlay').classList.add('hidden');
-        }
-
-        function displayContent(event, contentId) {
-            // Masquer tous les contenus
-            document.querySelectorAll('.contentClass').forEach(el => {
-                el.classList.add('hidden');
-            });
-
-            // Retirer la classe active de tous les boutons
-            document.querySelectorAll('.vertical-tab').forEach(el => {
-                el.classList.remove('active');
-                el.className = el.className.replace('from-green-500 to-green-600', 'bg-gray-100 hover:bg-gray-200');
-                el.className = el.className.replace('from-yellow-500 to-yellow-600', 'bg-gray-100 hover:bg-gray-200');
-                el.className = el.className.replace('from-red-500 to-red-600', 'bg-gray-100 hover:bg-gray-200');
-                el.className = el.className.replace('from-orange-500 to-orange-600', 'bg-gray-100 hover:bg-gray-200');
-                el.className = el.className.replace('text-white', 'text-gray-700');
-            });
-
-            // Afficher le contenu sélectionné
-            document.getElementById(contentId).classList.remove('hidden');
-            
-            // Activer le bouton sélectionné avec la couleur appropriée
-            const button = event.currentTarget;
-            button.classList.add('active');
-            button.className = button.className.replace('bg-gray-100 hover:bg-gray-200 text-gray-700', '');
-            
-            if (contentId === 'NDVI') {
-                button.className += ' bg-gradient-to-r from-green-500 to-green-600 text-white';
-            } else if (contentId === 'revenu_moyen') {
-                button.className += ' bg-gradient-to-r from-yellow-500 to-yellow-600 text-white';
-            } else if (contentId === 'PM_2.5') {
-                button.className += ' bg-gradient-to-r from-red-500 to-red-600 text-white';
-            } else if (contentId === 'bruit_routier') {
-                button.className += ' bg-gradient-to-r from-orange-500 to-orange-600 text-white';
-            }
-        }
-
-        function handleAddressSearch() {
-            const npa = document.getElementById('search_NPA').value;
-            const ville = document.getElementById('search_ville').value;
-            const adresse = document.getElementById('search_adress').value;
-
-            if (!npa || !ville || !adresse) {
-                showNotification('Veuillez remplir tous les champs', 'error');
-                return;
-            }
-
-            showLoading();
-            
-            // Simulation d'une recherche d'adresse
-            setTimeout(() => {
-                displayResults(adresse, npa + " " + ville);
-                hideLoading();
-            }, 1500);
-        }
-
-        function handleMapSelection() {
-            showNotification('Cliquez sur la carte pour sélectionner une position', 'info');
-            
-            const draw = new ol.interaction.Draw({
-                type: 'Point',
-                style: new ol.style.Style({
-                    image: new ol.style.Circle({
-                        radius: 8,
-                        fill: new ol.style.Fill({ color: '#3b82f6' }),
-                        stroke: new ol.style.Stroke({ color: 'white', width: 2 })
-                    })
-                })
-            });
-
-            map.addInteraction(draw);
-
-            draw.on('drawend', function(evt) {
-                const coordinate = evt.feature.getGeometry().getCoordinates();
-                const lonLat = ol.proj.transform(coordinate, 'EPSG:3857', 'EPSG:4326');
-                
-                map.removeInteraction(draw);
-                showLoading();
-                
-                setTimeout(() => {
-                    displayResults('Position sélectionnée', `${lonLat[1].toFixed(4)}, ${lonLat[0].toFixed(4)}`);
-                    hideLoading();
-                }, 1000);
-            });
-        }
-
-        function handleMapClick(longitude, latitude, coordinate, overlay) {
-            // Simulation de récupération de données
-            const mockData = {
-                canton: 'Genève',
-                ndvi: (0.2 + Math.random() * 0.3).toFixed(2),
-                income: Math.floor(80 + Math.random() * 40),
-                pm25: Math.floor(8 + Math.random() * 12),
-                noise: Math.floor(50 + Math.random() * 25)
-            };
-
-            // Afficher l'overlay avec les informations
-            overlay.setPosition(coordinate);
-            document.getElementById('feature-RELI').innerHTML = `Canton: ${mockData.canton}`;
-            document.getElementById('feature-NDVI').innerHTML = `NDVI: ${mockData.ndvi}`;
-            document.getElementById('feature-Income').innerHTML = `Revenu: ${mockData.income} kCHF`;
-            document.getElementById('feature-PM25').innerHTML = `PM 2.5: ${mockData.pm25} μg/m³`;
-            document.getElementById('feature-Noise').innerHTML = `Bruit: ${mockData.noise} dB`;
-            
-            document.querySelector('.overlay-container').classList.remove('hidden');
-
-            // Centrer la carte et zoomer
-            map.getView().setCenter(coordinate);
-            map.getView().setZoom(17);
-
-            // Ajouter un marqueur
-            addMarker(coordinate);
-
-            // Mettre à jour les graphiques avec des données simulées
-            updateChartsWithData(mockData);
-        }
-
-        function addMarker(coordinate) {
-            if (marker) {
-                map.removeLayer(marker);
-            }
-
-            marker = new ol.layer.Vector({
-                source: new ol.source.Vector({
-                    features: [
-                        new ol.Feature({
-                            geometry: new ol.geom.Point(coordinate)
-                        })
-                    ]
-                }),
-                style: new ol.style.Style({
-                    image: new ol.style.Icon({
-                        src: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`
+        marker = new ol.layer.Vector({
+          source: new ol.source.Vector({
+            features: [
+              new ol.Feature({
+                geometry: new ol.geom.Point(coordinate),
+              }),
+            ],
+          }),
+          style: new ol.style.Style({
+            image: new ol.style.Icon({
+              src:
+                "data:image/svg+xml;charset=utf-8," +
+                encodeURIComponent(`
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
                                 <circle cx="12" cy="10" r="3"/>
                             </svg>
                         `),
-                        anchor: [0.5, 1],
-                        scale: 1.5
-                    })
-                })
-            });
-            map.addLayer(marker);
-        }
+              anchor: [0.5, 1],
+              scale: 1.5,
+            }),
+          }),
+        });
+        map.addLayer(marker);
+      }
 
-        function updateChartsWithData(data) {
-            const layout = {
-                paper_bgcolor: 'rgba(248, 250, 252, 0.8)',
-                plot_bgcolor: 'rgba(255, 255, 255, 0.9)',
-                font: { color: '#374151', size: 11 },
-                margin: { t: 30, r: 20, b: 30, l: 40 },
-                height: 250,
-                showlegend: false
-            };
+      function updateChartsWithData(data) {
+        const layout = {
+          paper_bgcolor: "rgba(248, 250, 252, 0.8)",
+          plot_bgcolor: "rgba(255, 255, 255, 0.9)",
+          font: { color: "#374151", size: 11 },
+          margin: { t: 30, r: 20, b: 30, l: 40 },
+          height: 250,
+          showlegend: false,
+        };
 
-            // Générer des données de distribution simulées
-            const generateDistribution = (center, spread, count = 50) => {
-                return Array.from({length: count}, () => 
-                    center + (Math.random() - 0.5) * spread
-                );
-            };
+        // Générer des données de distribution simulées
+        const generateDistribution = (center, spread, count = 50) => {
+          return Array.from(
+            { length: count },
+            () => center + (Math.random() - 0.5) * spread,
+          );
+        };
 
-            // NDVI
-            const ndviData = [
-                {
-                    y: generateDistribution(0.25, 0.2),
-                    name: 'Distribution NDVI',
-                    type: 'box',
-                    marker: { color: '#10b981', opacity: 0.6 },
-                    line: { color: '#059669', width: 1 }
-                },
-                {
-                    x: ['NDVI'],
-                    y: [parseFloat(data.ndvi)],
-                    name: 'Votre Hectare',
-                    mode: 'markers',
-                    marker: { size: 10, color: '#ef4444', opacity: 0.8 }
-                }
-            ];
+        // NDVI
+        const ndviData = [
+          {
+            y: generateDistribution(0.25, 0.2),
+            name: "Distribution NDVI",
+            type: "box",
+            marker: { color: "#10b981", opacity: 0.6 },
+            line: { color: "#059669", width: 1 },
+          },
+          {
+            x: ["NDVI"],
+            y: [parseFloat(data.ndvi)],
+            name: "Votre Hectare",
+            mode: "markers",
+            marker: { size: 10, color: "#ef4444", opacity: 0.8 },
+          },
+        ];
 
-            // Revenu
-            const incomeData = [
-                {
-                    y: generateDistribution(100, 60),
-                    name: 'Distribution Revenu',
-                    type: 'box',
-                    marker: { color: '#f59e0b', opacity: 0.6 },
-                    line: { color: '#d97706', width: 1 }
-                },
-                {
-                    x: ['Revenu'],
-                    y: [data.income],
-                    name: 'Votre Hectare',
-                    mode: 'markers',
-                    marker: { size: 10, color: '#ef4444', opacity: 0.8 }
-                }
-            ];
+        // Revenu
+        const incomeData = [
+          {
+            y: generateDistribution(100, 60),
+            name: "Distribution Revenu",
+            type: "box",
+            marker: { color: "#f59e0b", opacity: 0.6 },
+            line: { color: "#d97706", width: 1 },
+          },
+          {
+            x: ["Revenu"],
+            y: [data.income],
+            name: "Votre Hectare",
+            mode: "markers",
+            marker: { size: 10, color: "#ef4444", opacity: 0.8 },
+          },
+        ];
 
-            // PM 2.5
-            const pm25Data = [
-                {
-                    y: generateDistribution(12, 8),
-                    name: 'Distribution PM 2.5',
-                    type: 'box',
-                    marker: { color: '#ef4444', opacity: 0.6 },
-                    line: { color: '#dc2626', width: 1 }
-                },
-                {
-                    x: ['PM 2.5'],
-                    y: [data.pm25],
-                    name: 'Votre Hectare',
-                    mode: 'markers',
-                    marker: { size: 10, color: '#7c2d12', opacity: 0.8 }
-                }
-            ];
+        // PM 2.5
+        const pm25Data = [
+          {
+            y: generateDistribution(12, 8),
+            name: "Distribution PM 2.5",
+            type: "box",
+            marker: { color: "#ef4444", opacity: 0.6 },
+            line: { color: "#dc2626", width: 1 },
+          },
+          {
+            x: ["PM 2.5"],
+            y: [data.pm25],
+            name: "Votre Hectare",
+            mode: "markers",
+            marker: { size: 10, color: "#7c2d12", opacity: 0.8 },
+          },
+        ];
 
-            // Bruit
-            const noiseData = [
-                {
-                    y: generateDistribution(60, 20),
-                    name: 'Distribution Bruit',
-                    type: 'box',
-                    marker: { color: '#f97316', opacity: 0.6 },
-                    line: { color: '#ea580c', width: 1 }
-                },
-                {
-                    x: ['Bruit'],
-                    y: [data.noise],
-                    name: 'Votre Hectare',
-                    mode: 'markers',
-                    marker: { size: 10, color: '#ef4444', opacity: 0.8 }
-                }
-            ];
+        // Bruit
+        const noiseData = [
+          {
+            y: generateDistribution(60, 20),
+            name: "Distribution Bruit",
+            type: "box",
+            marker: { color: "#f97316", opacity: 0.6 },
+            line: { color: "#ea580c", width: 1 },
+          },
+          {
+            x: ["Bruit"],
+            y: [data.noise],
+            name: "Votre Hectare",
+            mode: "markers",
+            marker: { size: 10, color: "#ef4444", opacity: 0.8 },
+          },
+        ];
 
-            Plotly.newPlot('NDVI', ndviData, layout, {responsive: true, displayModeBar: false});
-            Plotly.newPlot('revenu_moyen', incomeData, layout, {responsive: true, displayModeBar: false});
-            Plotly.newPlot('PM_2.5', pm25Data, layout, {responsive: true, displayModeBar: false});
-            Plotly.newPlot('bruit_routier', noiseData, layout, {responsive: true, displayModeBar: false});
-        }
+        Plotly.newPlot("NDVI", ndviData, layout, {
+          responsive: true,
+          displayModeBar: false,
+        });
+        Plotly.newPlot("revenu_moyen", incomeData, layout, {
+          responsive: true,
+          displayModeBar: false,
+        });
+        Plotly.newPlot("PM_2.5", pm25Data, layout, {
+          responsive: true,
+          displayModeBar: false,
+        });
+        Plotly.newPlot("bruit_routier", noiseData, layout, {
+          responsive: true,
+          displayModeBar: false,
+        });
+      }
 
-        function displayResults(address, location) {
-            // Masquer le panneau de recherche et afficher les résultats
-            document.getElementById('search-panel').classList.add('hidden');
-            document.getElementById('results-panel').classList.remove('hidden');
+      function displayResults(address, location) {
+        // Masquer le panneau de recherche et afficher les résultats
+        document.getElementById("search-panel").classList.add("hidden");
+        document.getElementById("results-panel").classList.remove("hidden");
 
-            // Remplir les informations
-            document.getElementById('adresse').textContent = address;
-            document.getElementById('npa_ville').textContent = location;
+        // Remplir les informations
+        document.getElementById("adresse").textContent = address;
+        document.getElementById("npa_ville").textContent = location;
 
-            // Générer des données simulées
-            const mockData = {
-                ndvi: (0.2 + Math.random() * 0.3).toFixed(2),
-                income: Math.floor(80 + Math.random() * 40),
-                pm25: Math.floor(8 + Math.random() * 12),
-                noise: Math.floor(50 + Math.random() * 25)
-            };
+        // Générer des données simulées
+        const mockData = {
+          ndvi: (0.2 + Math.random() * 0.3).toFixed(2),
+          income: Math.floor(80 + Math.random() * 40),
+          pm25: Math.floor(8 + Math.random() * 12),
+          noise: Math.floor(50 + Math.random() * 25),
+        };
 
-            // Afficher les statistiques avec comparaisons
-            document.getElementById('ndvi_value').innerHTML = `
+        // Afficher les statistiques avec comparaisons
+        document.getElementById("ndvi_value").innerHTML = `
                 <div class="font-bold text-sm">${mockData.ndvi}</div>
                 <div class="text-xs text-gray-500">Canton: 0.232, Suisse: 0.245</div>
             `;
-            
-            document.getElementById('income_value').innerHTML = `
+
+        document.getElementById("income_value").innerHTML = `
                 <div class="font-bold text-sm">${mockData.income}</div>
                 <div class="text-xs text-gray-500">Canton: 95.5, Suisse: 103.2</div>
             `;
-            
-            document.getElementById('pm25_value').innerHTML = `
+
+        document.getElementById("pm25_value").innerHTML = `
                 <div class="font-bold text-sm">${mockData.pm25}</div>
                 <div class="text-xs text-gray-500">Canton: 10.3, Suisse: 8.7</div>
             `;
-            
-            document.getElementById('noise_value').innerHTML = `
+
+        document.getElementById("noise_value").innerHTML = `
                 <div class="font-bold text-sm">${mockData.noise}</div>
                 <div class="text-xs text-gray-500">Canton: 58.2, Suisse: 55.1</div>
             `;
 
-            // Mettre à jour les graphiques
-            updateChartsWithData(mockData);
+        // Mettre à jour les graphiques
+        updateChartsWithData(mockData);
 
-            // Centrer la carte sur une position simulée (Genève)
-            const genevaCoord = ol.proj.fromLonLat([6.1432, 46.2044]);
-            map.getView().setCenter(genevaCoord);
-            map.getView().setZoom(15);
-            addMarker(genevaCoord);
+        // Centrer la carte sur une position simulée (Genève)
+        const genevaCoord = ol.proj.fromLonLat([6.1432, 46.2044]);
+        map.getView().setCenter(genevaCoord);
+        map.getView().setZoom(15);
+        addMarker(genevaCoord);
+      }
+
+      function resetInterface() {
+        // Réinitialiser les champs
+        document.getElementById("search_NPA").value = "";
+        document.getElementById("search_ville").value = "";
+        document.getElementById("search_adress").value = "";
+
+        // Afficher le panneau de recherche et masquer les résultats
+        document.getElementById("search-panel").classList.remove("hidden");
+        document.getElementById("results-panel").classList.add("hidden");
+
+        // Masquer l'overlay
+        document.querySelector(".overlay-container").classList.add("hidden");
+
+        // Supprimer le marqueur
+        if (marker) {
+          map.removeLayer(marker);
+          marker = null;
         }
 
-        function resetInterface() {
-            // Réinitialiser les champs
-            document.getElementById('search_NPA').value = '';
-            document.getElementById('search_ville').value = '';
-            document.getElementById('search_adress').value = '';
+        // Réinitialiser la vue de la carte
+        map.getView().setCenter(ol.proj.fromLonLat([8, 46.5]));
+        map.getView().setZoom(7);
 
-            // Afficher le panneau de recherche et masquer les résultats
-            document.getElementById('search-panel').classList.remove('hidden');
-            document.getElementById('results-panel').classList.add('hidden');
+        // Réinitialiser les graphiques
+        initializeCharts();
 
-            // Masquer l'overlay
-            document.querySelector('.overlay-container').classList.add('hidden');
+        showNotification("Interface réinitialisée", "success");
+      }
 
-            // Supprimer le marqueur
-            if (marker) {
-                map.removeLayer(marker);
-                marker = null;
-            }
+      function switchMapBackground() {
+        const button = document.getElementById("switch-button");
 
-            // Réinitialiser la vue de la carte
-            map.getView().setCenter(ol.proj.fromLonLat([8, 46.5]));
-            map.getView().setZoom(7);
-
-            // Réinitialiser les graphiques
-            initializeCharts();
-
-            showNotification('Interface réinitialisée', 'success');
+        if (currentMapSource === "OSM") {
+          layers[0].setVisible(true); // Satellite
+          layers[1].setVisible(false); // OSM
+          currentMapSource = "Satellite";
+          button.innerHTML =
+            '<i class="fas fa-map mr-2"></i><span>Vue OpenStreetMap</span>';
+        } else {
+          layers[0].setVisible(false); // Satellite
+          layers[1].setVisible(true); // OSM
+          currentMapSource = "OSM";
+          button.innerHTML =
+            '<i class="fas fa-satellite mr-2"></i><span>Vue Satellite</span>';
         }
+      }
 
-        function switchMapBackground() {
-            const button = document.getElementById('switch-button');
-            
-            if (currentMapSource === 'OSM') {
-                layers[0].setVisible(true);  // Satellite
-                layers[1].setVisible(false); // OSM
-                currentMapSource = 'Satellite';
-                button.innerHTML = '<i class="fas fa-map mr-2"></i><span>Vue OpenStreetMap</span>';
-            } else {
-                layers[0].setVisible(false); // Satellite
-                layers[1].setVisible(true);  // OSM
-                currentMapSource = 'OSM';
-                button.innerHTML = '<i class="fas fa-satellite mr-2"></i><span>Vue Satellite</span>';
-            }
-        }
+      function showNotification(message, type = "info") {
+        // Créer une notification toast moderne
+        const notification = document.createElement("div");
+        notification.className = `fixed top-16 right-4 z-50 p-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 ${
+          type === "error"
+            ? "bg-red-100 border border-red-200 text-red-800"
+            : type === "success"
+              ? "bg-green-100 border border-green-200 text-green-800"
+              : "bg-blue-100 border border-blue-200 text-blue-800"
+        }`;
 
-        function showNotification(message, type = 'info') {
-            // Créer une notification toast moderne
-            const notification = document.createElement('div');
-            notification.className = `fixed top-16 right-4 z-50 p-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 ${
-                type === 'error' ? 'bg-red-100 border border-red-200 text-red-800' : 
-                type === 'success' ? 'bg-green-100 border border-green-200 text-green-800' : 
-                'bg-blue-100 border border-blue-200 text-blue-800'
-            }`;
-            
-            notification.innerHTML = `
+        notification.innerHTML = `
                 <div class="flex items-center space-x-2 text-sm">
                     <i class="fas ${
-                        type === 'error' ? 'fa-exclamation-triangle' : 
-                        type === 'success' ? 'fa-check-circle' : 
-                        'fa-info-circle'
+                      type === "error"
+                        ? "fa-exclamation-triangle"
+                        : type === "success"
+                          ? "fa-check-circle"
+                          : "fa-info-circle"
                     }"></i>
                     <span>${message}</span>
                 </div>
             `;
-            
-            document.body.appendChild(notification);
-            
-            // Animation d'entrée
-            setTimeout(() => {
-                notification.style.transform = 'translateX(0)';
-            }, 100);
-            
-            // Suppression automatique
-            setTimeout(() => {
-                notification.style.transform = 'translateX(100%)';
-                setTimeout(() => {
-                    document.body.removeChild(notification);
-                }, 300);
-            }, 3000);
+
+        document.body.appendChild(notification);
+
+        // Animation d'entrée
+        setTimeout(() => {
+          notification.style.transform = "translateX(0)";
+        }, 100);
+
+        // Suppression automatique
+        setTimeout(() => {
+          notification.style.transform = "translateX(100%)";
+          setTimeout(() => {
+            document.body.removeChild(notification);
+          }, 300);
+        }, 3000);
+      }
+
+      // Initialisation au chargement de la page
+      window.addEventListener("load", function () {
+        // Animation d'entrée pour les éléments
+        document.querySelectorAll(".animate-slide-up").forEach((el, index) => {
+          el.style.animationDelay = `${index * 0.1}s`;
+        });
+
+        showNotification(
+          "Application Exposome chargée avec succès!",
+          "success",
+        );
+      });
+
+      // Gestion responsive
+      window.addEventListener("resize", function () {
+        if (map) {
+          map.updateSize();
         }
-
-        // Initialisation au chargement de la page
-        window.addEventListener('load', function() {
-            // Animation d'entrée pour les éléments
-            document.querySelectorAll('.animate-slide-up').forEach((el, index) => {
-                el.style.animationDelay = `${index * 0.1}s`;
-            });
-            
-            showNotification('Application Exposome chargée avec succès!', 'success');
-        });
-
-        // Gestion responsive
-        window.addEventListener('resize', function() {
-            if (map) {
-                map.updateSize();
-            }
-        });
+      });
     </script>
-</body>
+  </body>
 </html>

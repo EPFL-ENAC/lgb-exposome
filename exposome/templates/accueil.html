@@ -1,105 +1,180 @@
 {% load static %}<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Accueil</title>
-    <link rel="stylesheet" href="{% static 'stylesheets/main.css' %}"> {# <-- Chemin mis à jour #}
-    <script type="text/javascript" src="{% static 'javascripts/accueil.js' %}"></script>
-
-</head>
-<body>
-
-<nav>
-    <ul class="width-limited">
+    <link rel="stylesheet" href="{% static 'stylesheets/main.css' %}" />
+    {# <-- Chemin mis à jour #}
+    <script
+      type="text/javascript"
+      src="{% static 'javascripts/accueil.js' %}"
+    ></script>
+  </head>
+  <body>
+    <nav>
+      <ul class="width-limited">
         <li><a href="{% url 'home' %}">Accueil</a></li>
         <li><a href="{% url 'search' %}">Recherche</a></li>
-    </ul>
-</nav>
-<br>
+      </ul>
+    </nav>
+    <br />
 
-<div id="part1"> 
-<h1 style="font-size:22px;">Motivation</h1> 
-L'exposome d'un individu peut être défini comme l'ensemble de toutes les expositions de cet individu à son environnement. L'étude de l'exposome d'un individu permet entre autres de mettre en évidence des risques potentiels pour sa santé en accord avec l'exposition aux différentes composantes de son environnement.
-<br>
-En effet, nombre d'études ont mis en lumière le lien étroit entre environnement de vie (environnement naturel, socio-économique et socio-démographique) et la santé d'une population. L'organisation mondiale de la santé estime que les facteurs de stress environnementaux sont responsables de 12 à 18 % des décès dans les 53 pays de la Région Europe de l'OMS. Ainsi, le milieu de vie dans lequel évolue un individu peut donner des informations précieuses aux médecins généralistes, à la fois dans le cadre d'un diagnostic, mais également dans une optique de prévention.
+    <div id="part1">
+      <h1 style="font-size: 22px">Motivation</h1>
+      L'exposome d'un individu peut être défini comme l'ensemble de toutes les
+      expositions de cet individu à son environnement. L'étude de l'exposome
+      d'un individu permet entre autres de mettre en évidence des risques
+      potentiels pour sa santé en accord avec l'exposition aux différentes
+      composantes de son environnement.
+      <br />
+      En effet, nombre d'études ont mis en lumière le lien étroit entre
+      environnement de vie (environnement naturel, socio-économique et
+      socio-démographique) et la santé d'une population. L'organisation mondiale
+      de la santé estime que les facteurs de stress environnementaux sont
+      responsables de 12 à 18 % des décès dans les 53 pays de la Région Europe
+      de l'OMS. Ainsi, le milieu de vie dans lequel évolue un individu peut
+      donner des informations précieuses aux médecins généralistes, à la fois
+      dans le cadre d'un diagnostic, mais également dans une optique de
+      prévention.
 
-<br><br>
-Ainsi, le but de ce projet est la construction d'une interface Web-SIG permettant d'obtenir des informations sur le lieu de vie d'un individu. Pour ce faire chacun des hectares habités de Suisse ont été caractérisé par plusieurs critères, cela permettant d'avoir une idée de l'exposition de la population de cet hectare aux différentes composantes de leur environnement de vie.
+      <br /><br />
+      Ainsi, le but de ce projet est la construction d'une interface Web-SIG
+      permettant d'obtenir des informations sur le lieu de vie d'un individu.
+      Pour ce faire chacun des hectares habités de Suisse ont été caractérisé
+      par plusieurs critères, cela permettant d'avoir une idée de l'exposition
+      de la population de cet hectare aux différentes composantes de leur
+      environnement de vie.
 
-<br><br>
+      <br /><br />
 
-<h1 style="font-size:22px;">Critères présentés</h1>
-Quatre critères ont été utilisés pour la construction de cette interface : un indice de végétation (NDVI), le bruit routier nocturne, la pollution de l'air et le revenu moyen.
-</div>
+      <h1 style="font-size: 22px">Critères présentés</h1>
+      Quatre critères ont été utilisés pour la construction de cette interface :
+      un indice de végétation (NDVI), le bruit routier nocturne, la pollution de
+      l'air et le revenu moyen.
+    </div>
 
+    <br /><br />
 
-<br><br>
+    <div id="souspart">
+      <h2 style="font-size: 15px; color: black">Indice de végétation [-]</h2>
+      <br />
+      <img src="{% static 'images/ndvi.png' %}" width="500px" class="image" />
+      <br />
+      La première caractéristique présentée par l'interface est le NDVI
+      (Normalized Difference Vegetation Index) qui est utilisé comme indicateur
+      de la couverture végétale. Le taux de couverture végétale du lieu de vie
+      d'un individu peut influer sur sa santé. En effet, plusieurs études ont
+      mis en évidence le fait qu'un environnement verdoyant pouvait avoir des
+      bienfaits sur la santé physique et psychique d'un individu.
 
-<div id="souspart">
-<h2 style="font-size:15px;color:black;">Indice de végétation [-]</h2>
-<br>
-<img src="{% static 'images/ndvi.png' %}" width="500px" class="image"/>
-<br>
-La première caractéristique présentée par l'interface est le NDVI (Normalized Difference Vegetation Index) qui est utilisé comme indicateur de la couverture végétale.
-Le taux de couverture végétale du lieu de vie d'un individu peut influer sur sa santé. En effet, plusieurs études ont mis en évidence le fait qu'un environnement verdoyant pouvait avoir des bienfaits sur la santé physique et psychique d'un individu.
+      <br /><br />
+      Cet indice a été calculé pour l'intégralité du territoire Suisse à partir
+      de 39 images satellites Landsat 8 prises au cours de l'année 2020 et
+      présentant une couverture nuageuse inférieure à 10 \%. La Figure 1 montre
+      une fluctuation spatiale du nombre d'images utilisées sur le territoire
+      suisse, au minimum 3 et au maximum 21 images ont été utilisées. Les images
+      ont été téléchargées depuis le site "USGS EarthExplorer". Pour chaque
+      image, les bandes 4 (red) et 5 (NIR) ont été téléchargées. Ensuite, le
+      NDVI a été calculé pour chaque pixel (30 m x 30 m) en utilisant l'outil
+      Raster calculator du logiciel QGIS selon la formule suivante :
+      <br /><br />
+      NDVI = (b5 - b4) / (b5 + b4) = (NIR - R)(NIR + R)
+      <br /><br />
 
-<br><br>
-Cet indice a été calculé pour l'intégralité du territoire Suisse à partir de 39 images satellites Landsat 8 prises au cours de l'année 2020 et présentant une couverture nuageuse inférieure à 10 \%. La Figure 1 montre une fluctuation spatiale du nombre d'images utilisées sur le territoire suisse, au minimum 3 et au maximum 21 images ont été utilisées. Les images ont été téléchargées depuis le site "USGS EarthExplorer". Pour chaque image, les bandes 4 (red) et 5 (NIR) ont été téléchargées. Ensuite, le NDVI a été calculé pour chaque pixel (30 m x 30 m) en utilisant l'outil Raster calculator du logiciel QGIS selon la formule suivante :
-<br><br>
-    NDVI = (b5 - b4) / (b5 + b4) = (NIR - R)(NIR + R)
-<br><br>
+      Finalement, le NDVI moyen de chaque hectare habité a été calculé grâce à
+      l'outil "Statistique de zone" du logiciel QGIS.
+    </div>
 
-Finalement, le NDVI moyen de chaque hectare habité a été calculé grâce à l'outil "Statistique de zone" du logiciel QGIS.
-</div>
+    <br /><br />
 
-<br><br>
+    <div id="souspart">
+      <h2 style="font-size: 15px; color: black">Bruit routier [dB]</h2>
+      <br />
+      <img
+        src="{% static 'images/noise_map.png' %}"
+        width="500px"
+        class="image"
+      />
+      <br />
+      Le second critère présenté est le bruit routier nocturne. Une exposition
+      importante aux nuisances sonores peut avoir comme conséquence des
+      problèmes cardio-vasculaires, des troubles du sommeil, mais également des
+      troubles de l’apprentissage chez les enfants. De plus, de récentes études
+      ont montré que certaines maladies psychiques sont également plus souvent
+      diagnostiquées chez les personnes exposées au bruit.
+      <br /><br />
+      La base de données géoréférencée sonBASE datant de 2015 et produite par
+      l’Office fédéral suisse de l’environnement a été utilisée pour déterminer
+      les nuisances sonores routières nocturnes (Figure 2).
+      <br /><br />
+      Pour chaque hectare habité, une valeur médiane d'exposition a été calculée
+      à partir de l'outil "Statistique de zone" du logiciel QGIS. Certains
+      hectares ne possèdent pas de valeur pour cet indicateur, car les données
+      ne sont pas continues à travers le territoire. Ainsi, une valeur nulle
+      signifie qu'il n'y a pas d'axe routier majeur à proximité de l'hectare et
+      donc que les nuisances sonores sont négligeables.
+    </div>
 
-<div id="souspart">
-<h2 style="font-size:15px;color:black;">Bruit routier [dB]</h2> 
-<br>   
-<img src="{% static 'images/noise_map.png' %}" width="500px" class="image"/>   
-<br>
-Le second critère présenté est le bruit routier nocturne. Une exposition importante aux nuisances sonores peut avoir comme conséquence des problèmes cardio-vasculaires, des troubles du sommeil, mais également des troubles de l’apprentissage chez les enfants. De plus, de récentes études ont montré que certaines maladies psychiques sont également plus souvent diagnostiquées chez les personnes exposées au bruit.
-<br><br>
-La base de données géoréférencée sonBASE datant de 2015 et produite par l’Office fédéral suisse de l’environnement a été utilisée pour déterminer les nuisances sonores routières nocturnes (Figure 2).
-<br><br>
-Pour chaque hectare habité, une valeur médiane d'exposition a été calculée à partir de l'outil "Statistique de zone" du logiciel QGIS. Certains hectares ne possèdent pas de valeur pour cet indicateur, car les données ne sont pas continues à travers le territoire. Ainsi, une valeur nulle signifie qu'il n'y a pas d'axe routier majeur à proximité de l'hectare et donc que les nuisances sonores sont négligeables.
-</div>
+    <br /><br />
+    <div id="souspart">
+      <h2 style="font-size: 15px; color: black">
+        Pollution de l'air [μg/m<sup>3</sup>]
+      </h2>
+      <br />
+      <img
+        src="{% static 'images/pm25_map.png' %}"
+        width="500px"
+        class="image"
+      />
+      <br />
+      La pollution de l'air est un indicateur important, car elle représente
+      l'un des risques environnementaux majeur en Europe. Une exposition à la
+      pollution atmosphérique peut avoir de lourdes conséquences telles que des
+      maladies cardiaques, les accidents vasculaires cérébraux, les maladies
+      pulmonaires et le cancer du poumon. De plus, actuellement, on estime que
+      l'exposition à la pollution atmosphérique est à l'origine de plus de 400
+      000 décès prématurés dans l'union européenne chaque année.
+      <br /><br />
+      Ici, la pollution atmosphérique est représentée par le taux de poussière
+      fine PM2.5. Pour les PM2,5, les expositions à court terme ont été
+      associées à une mortalité prématurée, à une augmentation des admissions à
+      l'hôpital pour des causes cardiaques ou pulmonaires, à des bronchites
+      aiguës et chroniques, à des crises d'asthme, etc. Ces effets néfastes sur
+      la santé ont été signalés principalement chez les nourrissons, les enfants
+      et les personnes âgées souffrant de maladies cardiaques ou pulmonaires
+      préexistantes. En outre, de tous les polluants atmosphériques courants,
+      les PM2,5 sont associés à la plus grande proportion d'effets néfastes sur
+      la santé liés à la pollution atmosphérique, tant aux États-Unis que dans
+      le monde entier, d'après le projet "Global Burden of Disease" de
+      l'Organisation mondiale de la santé.
 
+      <br /><br />
+      Enfin, comme précédemment, une valeur médiane d'exposition a été calculée
+      à partir de l'outil "Statistique de zone" du logiciel QGIS pour chaque
+      hectare habité de Suisse.
+    </div>
 
-<br><br>
-<div id="souspart">
-<h2 style="font-size:15px;color:black;">Pollution de l'air [μg/m<sup>3</sup>]</h2>
-<br>
-<img src="{% static 'images/pm25_map.png' %}" width="500px" class="image"/>
-<br>
-La pollution de l'air est un indicateur important, car elle représente l'un des risques environnementaux majeur en Europe. Une exposition à la pollution atmosphérique peut avoir de lourdes conséquences telles que des maladies cardiaques, les accidents vasculaires cérébraux, les maladies pulmonaires et le cancer du poumon. De plus, actuellement, on estime que l'exposition à la pollution atmosphérique est à l'origine de plus de 400 000 décès prématurés dans l'union européenne chaque année. 
-<br><br>
-Ici, la pollution atmosphérique est représentée par le taux de poussière fine PM2.5. Pour les PM2,5, les expositions à court terme ont été associées à une mortalité prématurée, à une augmentation des admissions à l'hôpital pour des causes cardiaques ou pulmonaires, à des bronchites aiguës et chroniques, à des crises d'asthme, etc. Ces effets néfastes sur la santé ont été signalés principalement chez les nourrissons, les enfants et les personnes âgées souffrant de maladies cardiaques ou pulmonaires préexistantes. En outre, de tous les polluants atmosphériques courants, les PM2,5 sont associés à la plus grande proportion d'effets néfastes sur la santé liés à la pollution atmosphérique, tant aux États-Unis que dans le monde entier, d'après le projet "Global Burden of Disease" de l'Organisation mondiale de la santé.
+    <div id="souspart">
+      <br />
+      <h2 style="font-size: 15px; color: black">Revenu médian [kCHF]</h2>
+      <br />
+      Finalement, le revenu médian de chaque hectare habité de Suisse est
+      également présenté. Cet indicateur donne des informations sur la situation
+      socio-économique au sein d'un hectare. Le revenu d'un individu peut
+      influencer sa santé par divers mécanismes cliniques, comportementaux, ou
+      sociaux. En effet, le niveau de revenu influence directement le lieu de
+      vie, mais il peut également être révélateur de certains comportements et
+      modes de vie ainsi que d'une inégalité dans l'accès aux soins médicaux et
+      la qualité de ceux-ci.
+    </div>
+    <br /><br />
 
-<br><br>
-Enfin, comme précédemment, une valeur médiane d'exposition a été calculée à partir de l'outil "Statistique de zone" du logiciel QGIS pour chaque hectare habité de Suisse.
-</div>
+    <footer></footer>
 
-
-<div id="souspart">
-<br>
-<h2 style="font-size:15px;color:black;">Revenu médian [kCHF]</h2>
-<br>
-Finalement, le revenu médian de chaque hectare habité de Suisse est également présenté. Cet indicateur donne des informations sur la situation socio-économique au sein d'un hectare. Le revenu d'un individu peut influencer sa santé par divers mécanismes cliniques, comportementaux, ou sociaux. En effet, le niveau de revenu influence directement le lieu de vie, mais il peut également être révélateur de certains comportements et modes de vie ainsi que d'une inégalité dans l'accès aux soins médicaux et la qualité de ceux-ci.
-</div>
-<br><br>
-
-
-
-<footer></footer>
-
-<!-- <script type="text/javascript">
+    <!-- <script type="text/javascript">
     accueil_js()
 </script> -->
-
-</body>
+  </body>
 </html>

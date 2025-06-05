@@ -72,6 +72,7 @@ The development environment includes:
 Data for the platform is organized the following way:
 
 ### Application Data
+
 - Location: `./`
 - Contains:
   - Application-specific data
